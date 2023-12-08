@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "channels",
     "realtime_data",
+    "websocketapp",
+    "pddetectionapp",
 ]
 
 MIDDLEWARE = [
