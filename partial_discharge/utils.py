@@ -20,5 +20,5 @@ def transform_routes_data(data):
     return transformed_data
 
 
-def res_form(code=20000, data=None, status="success"):
-    return {"code": code, "data": data, "status": status}
+def res_form(code=20000, data=None, message="success"):
+    return {"code": code, "data": data, "message": message}

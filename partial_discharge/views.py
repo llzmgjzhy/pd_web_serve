@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import pd, dynamic_routes
+from .models import pd, dynamic_routes, user_login
 from .serializers import RoutesSerializer
 import simplejson
 import json
@@ -16,7 +16,7 @@ def delete(request: HttpRequest):
         id = payload["id"]
         mgr = pd.objects.get(id=id)
         mgr.delete()
-        return JsonResponse({"Status": "DeleteSuccess"})
+        return JsonResponse({"message": "DeleteSuccess"})
     except Exception as e:
         return JsonResponse({"Runstatus": e.args})
 
@@ -37,9 +37,27 @@ def update_by_id(request: HttpRequest):
         ac.deposit = deposit
         ac.Statement = Statement
         ac.save()
-        return JsonResponse({"Status": "UpDateSucess"})
+        return JsonResponse({"message": "UpDateSucess"})
     except Exception as e:
-        return JsonResponse({"Status": "UpDateError"})
+        return JsonResponse({"message": "UpDateError"})
+
+
+def login(request: Union[HttpRequest, Dict]):
+    try:
+        user_info = json.loads(request.body)["user_info"]
+        username = user_info["username"]
+        password = user_info["password"]
+        instance = user_login.objects.filter(
+            username=username, password=password
+        ).exists()
+        # print(instance)
+        if instance:
+            return JsonResponse(res_form(message="登录成功"))
+        else:
+            return JsonResponse(res_form(30000, message="账号或密码错误"))
+    except Exception as e:
+        print(e)
+        return JsonResponse(res_form(30001, message=e.args))
 
 
 def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
@@ -53,7 +71,7 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
         stream_num = re.search(r"\d+", data_stream).group()
         if not stream_num:
             return JsonResponse(
-                res_form(60001, status="please transfer data stream string")
+                res_form(60001, message="please transfer data stream string")
             )
 
         eligible_count = (
@@ -95,7 +113,7 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
     except Exception as e:
         print(e)
         res_code = 60000
-        return JsonResponse(res_form(res_code, status="Search failed"))
+        return JsonResponse(res_form(res_code, message="Search failed"))
 
 
 def route_create(request: HttpRequest):
@@ -104,7 +122,7 @@ def route_create(request: HttpRequest):
         id = payload["id"]
         mgr = dynamic_routes.objects.filter(id=id)
         if mgr:  # 如果数据库中存在
-            return JsonResponse({"Status": "Exist"})
+            return JsonResponse({"message": "Exist"})
         else:
             path = payload["path"]
             component = payload["component"]
@@ -123,11 +141,11 @@ def route_create(request: HttpRequest):
             ac.children_meta_title = children_meta_title
             ac.children_meta_icon = children_meta_icon
             ac.save()
-            return JsonResponse({"Status": "CreateSucess"})
+            return JsonResponse({"message": "CreateSucess"})
 
     except Exception as e:
         print(e)
-        return JsonResponse({"Status": "error"})
+        return JsonResponse({"message": "error"})
 
 
 def all_routes(request: HttpRequest):
@@ -141,4 +159,4 @@ def all_routes(request: HttpRequest):
 
     except Exception as e:
         print(e)
-        return JsonResponse({"Status": "error"})
+        return JsonResponse({"message": "error"})
