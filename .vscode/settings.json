@@ -1,6 +1,26 @@
 {
     "cSpell.words": [
+<<<<<<< HEAD
         "asgi",
         "simplejson"
+=======
+<<<<<<< HEAD
+        "asgi",
+        "prpd",
+        "simplejson"
+    ],
+
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnPaste": false, // required 
+    "editor.formatOnType": false, // required
+    "editor.formatOnSave": true, // optional 
+    "editor.formatOnSaveMode": "file", // required to format on save
+    "files.autoSave": "onFocusChange", // optional but recommended
+    "vs-code-prettier-eslint.prettierLast": "false" // set as "true" to run 'prettier' last not first
+}
+=======
+        "asgi"
+>>>>>>> a506cf631360247426561e17d5346b8b10ead130
     ]
 }
+>>>>>>> 73530e446101ee2939656ad259857b85ff941b29
