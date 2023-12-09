@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "partial_discharge",
     "corsheaders",
     "channels",
+    "partial_discharge",
     "realtime_data",
     "websocketapp",
     "pddetectionapp",
@@ -74,10 +74,9 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = "back.wsgi.application"
-
+ 
 ASGI_APPLICATION = "back.asgi.application"
+WSGI_APPLICATION = "back.wsgi.application"
 
 
 # Password validation

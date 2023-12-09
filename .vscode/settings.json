@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+<<<<<<< HEAD
         "asgi",
         "prpd",
         "simplejson"
@@ -13,3 +14,8 @@
     "files.autoSave": "onFocusChange", // optional but recommended
     "vs-code-prettier-eslint.prettierLast": "false" // set as "true" to run 'prettier' last not first
 }
+=======
+        "asgi"
+    ]
+}
+>>>>>>> 73530e446101ee2939656ad259857b85ff941b29
