@@ -5,12 +5,12 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import mysql.connector
 import asyncio
 import aiomysql
-
+from .pddetect import PD_detect
 
 class PDConsumer(AsyncWebsocketConsumer):
     async def connect(self):  # 当WebSocket连接建立时，该方法将被调用
         await self.accept()
-        asyncio.run(read_mysql())
+        await read_mysql()
 
     async def disconnect(self, close_code):  # 当WebSocket连接关闭时，该方法将被调用
         pass
@@ -24,7 +24,7 @@ class PDConsumer(AsyncWebsocketConsumer):
 async def create_connection():
     return await aiomysql.connect(
         host='localhost',
-        user='root',
+        user=       'root',
         password='123456',
         db='pulsedata',
         loop=asyncio.get_event_loop()
@@ -44,7 +44,7 @@ async def read_data(current_row, batch_size):
     connection = await create_connection()
     try:
         async with connection.cursor() as cursor:
-            await cursor.execute(f"SELECT max_peak, phase FROM sample_data LIMIT {current_row}, {batch_size}")
+            await cursor.execute(f"SELECT max_peak, freq, tim FROM sample_data LIMIT {current_row}, {batch_size}")
             rows = await cursor.fetchall()
             return rows
     finally:
@@ -62,17 +62,17 @@ async def monitor_table(batch_size):
                 new_total_rows = result[0]
                 if new_total_rows >= current_row + batch_size:
                     rows = await read_data(current_row, batch_size)
-                    for row in rows:
-                        print(row)
+                    print(rows)
+                    PD_detect(rows)
                     current_row += batch_size
             await asyncio.sleep(5)
         finally:
             connection.close()
 
 async def read_mysql():
-        # 连接数据库
+    # 连接数据库
     connection = await create_connection()
-
+    # print(1)
     # 查询数据总行数
     total_rows = await get_total_rows(connection)
 
@@ -86,8 +86,8 @@ async def read_mysql():
     current_row = 0
     while current_row < total_rows:
         rows = await read_data(current_row, batch_size)
-        for row in rows:
-            print(row)
+        # print(rows)
+        PD_detect(rows)
         current_row += batch_size
 
     # 等待监测任务结束
