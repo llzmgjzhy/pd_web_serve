@@ -1,6 +1,7 @@
 import asyncio
 from modules import WsClient
 from utils import initial_files_data, start_monitoring
+import argparse
 
 URL = "ws://127.0.0.1:8000/ws/chat/"
 DIRECTORY_PATH = "E:\\项目程序\\test"  # 替换要监视的文件夹路径

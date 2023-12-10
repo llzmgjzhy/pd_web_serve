@@ -5,7 +5,7 @@ import os
 import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
-
+import asyncio
 class Attn(nn.Module):
     def __init__(self, hidden_size, batch_first=True):
         super(Attn, self).__init__()
@@ -57,7 +57,7 @@ class Bi_lstm(nn.Module):
 
         return out
 
-    def predict(self, test_x):
+    async def predict(self, test_x):
         out, _ = self.ls1(test_x)
         out = self.attention(out)
         out = self.fc1(out)
@@ -67,7 +67,7 @@ class Bi_lstm(nn.Module):
         return out  # .detach().numpy()
 
 
-def preprocess_data(new_data, scaler):
+async def preprocess_data(new_data, scaler):
     # 应用与训练时相同的标准化
     standardized_data = scaler.transform(new_data)
 
@@ -86,7 +86,7 @@ def predict(model, preprocessed_data):
     return predicted.numpy()
 
 
-def PD_detect(new_data):
+async def PD_detect(new_data):
     # print("Current working directory:", os.getcwd())
     scaler = joblib.load('pddetectionapp/models/scaler.save')
     
@@ -97,10 +97,12 @@ def PD_detect(new_data):
 
     # 假设 new_data 是新的原始数据，scaler 是训练时使用的StandardScaler实例
     
-    preprocessed_data = preprocess_data(new_data, scaler)
+    preprocessed_data = await preprocess_data(new_data, scaler)
 
-    predictions = predict(model, preprocessed_data)
-    print("预测结果为：{}".format(predictions))
+    predictions = predict(model, preprocessed_data)[0]
+    # print("预测结果为：{}".format(predictions))
+    return predictions
+
 
 if __name__ == '__main__':
     data = pd.read_excel('pddetectionapp/models/shu.xlsx').values
