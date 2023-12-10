@@ -2,6 +2,10 @@
     "cSpell.words": [
 <<<<<<< HEAD
         "asgi",
+        "simplejson"
+=======
+<<<<<<< HEAD
+        "asgi",
         "prpd",
         "simplejson"
     ],
@@ -16,6 +20,7 @@
 }
 =======
         "asgi"
+>>>>>>> a506cf631360247426561e17d5346b8b10ead130
     ]
 }
 >>>>>>> 73530e446101ee2939656ad259857b85ff941b29

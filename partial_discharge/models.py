@@ -28,3 +28,10 @@ class dynamic_routes(models.Model):
     class Meta:
         db_table = "dynamic_routes"
 
+class user_login(models.Model):
+    username = models.CharField(max_length=255, primary_key=True)
+    password = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = "user_info"
+
