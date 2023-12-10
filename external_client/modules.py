@@ -3,6 +3,7 @@ import websockets
 import asyncio
 import websocket
 
+
 class WsClient:
     def __init__(self, url) -> None:
         self.url = url  # url是websocket服务器的地址
@@ -17,7 +18,9 @@ class WsClient:
 
         try:
             # async with websockets.connect(url) as websocket:
-            self.ws = await websockets.connect(url)  # 异步函数用于建立连接。连接成功后，self.ws属性被设置为WebSocket连接对象。
+            self.ws = await websockets.connect(
+                url
+            )  # 异步函数用于建立连接。连接成功后，self.ws属性被设置为WebSocket连接对象。
             print("connect successfully")
             # return websocket
         except websockets.exceptions.InvalidHandshake as e:
@@ -39,24 +42,28 @@ class WsClient:
         # print("sending message:", result)
 
     async def _onmessage(self):
-        '''
+        """
         接收来自WebSocket服务器的信息
         :return:
-        '''
+        """
         message = await self.ws.recv()  # 异步调用等待并接收来自服务器的消息
         return message
 
     async def handler(self):
-        '''
+        """
         公开的异步方法，是客户端的主要处理器
         :return:
-        '''
+        """
         await self._connect(self.url)  # 调用 _connect 方法来建立连接
         if self.ws is not None:
-            await self._send("Client and server connect successfully")  # 调用 _send 方法来发送一条初始消息（"connect successfully"）
+            await self._send(
+                "Client and server connect successfully"
+            )  # 调用 _send 方法来发送一条初始消息（"connect successfully"）
             try:
                 while True:  # 无线循环
-                    message = await self._onmessage()  # 不断调用 _onmessage 方法接收来自服务器的消息，并打印这些消息。
+                    message = (
+                        await self._onmessage()
+                    )  # 不断调用 _onmessage 方法接收来自服务器的消息，并打印这些消息。
                     print("received message:", message)
 
             except websockets.exceptions.ConnectionClosed:
@@ -65,12 +72,12 @@ class WsClient:
             print("WebSocket connection not established")
         # infinite for loop to keeping connect alive
         # writing concrete fun into while loop
+
     async def one_handle(self):
         await self._connect(self.url)  # 调用 _connect 方法来建立连接
         if self.ws is not None:
-            await self._send("Client and server once connect successfully")  # 调用 _send 方法来发送一条初始消息（"connect successfully"）
+            # await self._send("Client and server once connect successfully")  # 调用 _send 方法来发送一条初始消息（"connect successfully"）
             print("Client and server once connect successfully")
+
     async def mark_initial_files_sent(self):
         self.initial_files_sent = True
-
-

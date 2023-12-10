@@ -23,7 +23,7 @@ async def main():
     await initial_files_data(args.dir_path, web_client)
     # 定义其他异步任务
     await asyncio.gather(
-        web_client.handler(), start_monitoring(argparse.dir_path, web_client)
+        web_client.handler(), start_monitoring(args.dir_path, web_client)
     )
 
 

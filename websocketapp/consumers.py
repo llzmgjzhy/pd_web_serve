@@ -4,11 +4,14 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import mysql.connector
 
+# 打开文件并加载JSON数据
+with open("package.json", "r") as file:
+    db_config = json.load(file)["database"]
+
 
 class MyConsumer(AsyncWebsocketConsumer):
     async def connect(self):  # 当WebSocket连接建立时，该方法将被调用
         await self.accept()
-        
 
     async def disconnect(self, close_code):  # 当WebSocket连接关闭时，该方法将被调用
         pass
@@ -21,11 +24,11 @@ class MyConsumer(AsyncWebsocketConsumer):
 
             # message = text_data_json.get('sensor_type', 'No message key in JSON')
         except json.JSONDecodeError:
-            print('报错: 数据格式不是JSON类型，而是{}类型'.format(type(text_data)))
+            print("注意: 接收的数据格式不是JSON类型，而是{}类型".format(type(text_data)))
             if text_data:
-                print('接收到的数据:', repr(text_data))
+                print("接收到的数据:", repr(text_data))
             else:
-                print('接收到的数据为空或不可打印')
+                print("接收到的数据为空或不可打印")
 
         # 打印接收到的消息
         # print(f"Received message from client: {message}")
@@ -33,70 +36,88 @@ class MyConsumer(AsyncWebsocketConsumer):
         # 存储数据到MySQL
         # self.save_to_mysql(sensor_type)
         # 发送消息到 WebSocket
-        await self.send('>>>>>> 服务器端已收到数据 <<<<<<')
+        await self.send(">>>>>> 服务器端已收到数据 <<<<<<")
 
     async def save_to_mysql(self, data):
-        print('----- 将数据存到MySQL中 -----')
+        print("----- 将数据存到MySQL中 -----")
 
         connection = mysql.connector.connect(
-            host='localhost',
-            database='pulsedata',
-            user='root',
-            password='123456'
+            host=db_config["host_name"],
+            database=db_config["db_name"],
+            user=db_config["user_name"],
+            password=db_config["user_password"],
         )
+
         cursor = connection.cursor()
 
-        if 'sensor_type' in data:
-            print('存到sample_info表里')
+        if "sensor_type" in data:
+            print("存到sample_info表里")
             sensor_type = data["sensor_type"]
             device_type = data["device_type"]
             sampling_rate = data["sampling_rate"]
             sampling_length = data["sampling_length"]
             discharge_type = data["discharge_type"]
-            self.sample_info_id = insert_sample_info(connection, sensor_type, device_type, sampling_rate, sampling_length, discharge_type)
+            self.sample_info_id = insert_sample_info(
+                connection,
+                sensor_type,
+                device_type,
+                sampling_rate,
+                sampling_length,
+                discharge_type,
+            )
 
             # connection.commit()
             # cursor.close()
             # connection.close()
 
-        elif 'max_peak' in data:
+        elif "max_peak" in data:
             if self.sample_info_id is None:
-                print('错误: 未接收到 sensor_type 数据')
+                print("错误: 未接收到 sensor_type 数据")
                 return
             max_peak = data["max_peak"]
             phase = data["phase"]
             freq = data["freq"]
             tim = data["tim"]
             waveform = data["waveform"]
-            insert_sample_data(connection, self.sample_info_id, max_peak, phase, freq, tim, waveform)
+            insert_sample_data(
+                connection, self.sample_info_id, max_peak, phase, freq, tim, waveform
+            )
 
         else:
-            print('Mysql数据存储出现错误')
+            print("Mysql数据存储出现错误")
         connection.commit()
         cursor.close()
         connection.close()
 
 
-def insert_sample_info(connection, sensor_type, device_type, sampling_rate, sampling_length,
-                       discharge_type):
+def insert_sample_info(
+    connection, sensor_type, device_type, sampling_rate, sampling_length, discharge_type
+):
     with connection.cursor() as cursor:
         # SQL执行语句
         sql = """
             INSERT INTO sample_info (sensor_type, device_type, sampling_rate, sampling_length, discharge_type)
             VALUES (%s, %s, %s, %s, %s)
         """
-        cursor.execute(sql, (sensor_type, device_type, sampling_rate, sampling_length, discharge_type))
+        cursor.execute(
+            sql,
+            (sensor_type, device_type, sampling_rate, sampling_length, discharge_type),
+        )
         connection.commit()
         print("Data information insert successfully")
         return cursor.lastrowid
 
 
-def insert_sample_data(connection, sample_info_id, max_peak, phase, other1, other2, waveform):
+def insert_sample_data(
+    connection, sample_info_id, max_peak, phase, other1, other2, waveform
+):
     with connection.cursor() as cursor:
         sql = """
             INSERT INTO sample_data (sample_info_id, max_peak, phase, freq, tim, waveform)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(sql, (sample_info_id, max_peak, phase, other1, other2, json.dumps(waveform)))
+        cursor.execute(
+            sql, (sample_info_id, max_peak, phase, other1, other2, json.dumps(waveform))
+        )
         connection.commit()
         print("Data Sample insert successfully")

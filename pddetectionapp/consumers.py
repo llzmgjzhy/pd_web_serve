@@ -6,6 +6,10 @@ import asyncio
 import aiomysql
 from .pddetect import PD_detect
 
+# 打开文件并加载JSON数据
+with open("package.json", "r") as file:
+    db_config = json.load(file)["database"]
+
 
 class PDConsumer(AsyncWebsocketConsumer):
     async def connect(self):  # 当WebSocket连接建立时，该方法将被调用
@@ -29,10 +33,10 @@ class PDConsumer(AsyncWebsocketConsumer):
 
 async def create_connection():
     return await aiomysql.connect(
-        host="localhost",
-        user="root",
-        password="123456",
-        db="pulsedata",
+        host=db_config["host_name"],
+        user=db_config["user_name"],
+        password=db_config["user_password"],
+        db=db_config["db_name"],
         loop=asyncio.get_event_loop(),
     )
 

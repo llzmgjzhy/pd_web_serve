@@ -165,11 +165,14 @@ def read_and_store_data(file_path, connection):
 
 
 def main():
+    # 打开文件并加载JSON数据
+    with open("../package.json", "r") as file:
+        db_config = json.load(file)["database"]
     # Database credentials
-    host_name = "localhost"
-    user_name = "root"
-    user_password = "123456"
-    db_name = "pulsedata"
+    host_name = db_config["host_name"]
+    user_name = db_config["user_name"]
+    user_password = db_config["user_password"]
+    db_name = db_config["db_name"]
     # 连接数据库
 
     connection = create_connection(host_name, user_name, user_password, db_name)
