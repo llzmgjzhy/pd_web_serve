@@ -8,7 +8,7 @@ parser.add_argument(
     dir_path, type=str, default="E:\\Project program\\test", help="需要监视的文件夹路径"
 )
 URL = "ws://127.0.0.1:8000/chat/"
-DIRECTORY_PATH = "E:\\Project program\\test"
+# DIRECTORY_PATH = "E:\\Project program\\test"
 
 
 async def main():
