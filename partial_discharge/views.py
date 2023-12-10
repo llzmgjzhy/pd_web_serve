@@ -70,6 +70,7 @@ def pd_data(
             data_stream = request["route"]
         else:
             data_stream = json.loads(request.body)["route"]
+
         stream_num = re.search(r"\d+", data_stream).group()
         if not stream_num:
             return JsonResponse(
@@ -105,16 +106,20 @@ def pd_data(
 
         tim_freq_list = list(zip(tim_list, freq_list))
 
-        # waveform_list = waveform_list[-5:].decode("utf-8")
+        # waveform_list = waveform_list[:waveform_count].decode("utf-8")
         # waveform_list = json.loads(waveform_list)
-        # waveform_list = [
-        #     json.loads(item.decode("utf-8")) for item in waveform_list[:waveform_count]
-        # ]
-        # waveform_list = [item for sublist in waveform_list for item in sublist]
+        waveform_list = [
+            json.loads(item.decode("utf-8")) for item in waveform_list[:waveform_count]
+        ]
+        waveform_list = [
+            (index, item)
+            for sublist in waveform_list
+            for index, item in enumerate(sublist)
+        ]
         data = {
             "phase_peak": phase_peak_list,
             "tim_freq": tim_freq_list,
-            # "waveform": waveform_list,
+            "waveform": waveform_list,
             "last_id": id_list[-1],
         }
         if type(request) == dict:
@@ -125,6 +130,9 @@ def pd_data(
         print(e)
         res_code = 60000
         return JsonResponse(res_form(res_code, message="Search failed"))
+
+
+# def waveform_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300, waveform_count=1):
 
 
 def route_create(request: HttpRequest):
