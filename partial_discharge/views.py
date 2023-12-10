@@ -60,7 +60,9 @@ def login(request: Union[HttpRequest, Dict]):
         return JsonResponse(res_form(30001, message=e.args))
 
 
-def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
+def pd_data(
+    request: Union[HttpRequest, Dict], begin_id=0, data_len=300, waveform_count=1
+):
     res_code = 20000
     try:
         # get stream string from font-end,example "/data-stream-1/index"
@@ -68,6 +70,7 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
             data_stream = request["route"]
         else:
             data_stream = json.loads(request.body)["route"]
+
         stream_num = re.search(r"\d+", data_stream).group()
         if not stream_num:
             return JsonResponse(
@@ -90,9 +93,11 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
         all_data = (
             pd.objects.filter(sample_info_id=stream_num, id__gte=begin_id)
             .order_by("id")[:data_len]
-            .values_list("id", "max_peak", "phase", "tim", "freq")
+            .values_list("id", "max_peak", "phase", "tim", "freq", "waveform")
         )
-        id_list, max_peak_list, phase_list, tim_list, freq_list = zip(*all_data)
+        id_list, max_peak_list, phase_list, tim_list, freq_list, waveform_list = zip(
+            *all_data
+        )
         phase_peak_list = list(zip(phase_list, max_peak_list))
 
         # turn freq and time into scientific counting
@@ -101,9 +106,20 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
 
         tim_freq_list = list(zip(tim_list, freq_list))
 
+        # waveform_list = waveform_list[:waveform_count].decode("utf-8")
+        # waveform_list = json.loads(waveform_list)
+        waveform_list = [
+            json.loads(item.decode("utf-8")) for item in waveform_list[:waveform_count]
+        ]
+        waveform_list = [
+            (index, item)
+            for sublist in waveform_list
+            for index, item in enumerate(sublist)
+        ]
         data = {
             "phase_peak": phase_peak_list,
             "tim_freq": tim_freq_list,
+            "waveform": waveform_list,
             "last_id": id_list[-1],
         }
         if type(request) == dict:
@@ -114,6 +130,9 @@ def pd_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300):
         print(e)
         res_code = 60000
         return JsonResponse(res_form(res_code, message="Search failed"))
+
+
+# def waveform_data(request: Union[HttpRequest, Dict], begin_id=0, data_len=300, waveform_count=1):
 
 
 def route_create(request: HttpRequest):
