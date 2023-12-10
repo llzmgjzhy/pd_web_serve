@@ -53,25 +53,28 @@ class MyConsumer(AsyncWebsocketConsumer):
             sampling_rate = data["sampling_rate"]
             sampling_length = data["sampling_length"]
             discharge_type = data["discharge_type"]
-            sample_info_id = insert_sample_info(connection, sensor_type, device_type, sampling_rate, sampling_length, discharge_type)
+            self.sample_info_id = insert_sample_info(connection, sensor_type, device_type, sampling_rate, sampling_length, discharge_type)
 
-            connection.commit()
-            cursor.close()
-            connection.close()
+            # connection.commit()
+            # cursor.close()
+            # connection.close()
 
         elif 'max_peak' in data:
+            if self.sample_info_id is None:
+                print('错误: 未接收到 sensor_type 数据')
+                return
             max_peak = data["max_peak"]
             phase = data["phase"]
             freq = data["freq"]
             tim = data["tim"]
             waveform = data["waveform"]
-            insert_sample_data(connection, sample_info_id, max_peak, phase, freq, tim, waveform)
+            insert_sample_data(connection, self.sample_info_id, max_peak, phase, freq, tim, waveform)
 
-            connection.commit()
-            cursor.close()
-            connection.close()
         else:
             print('Mysql数据存储出现错误')
+        connection.commit()
+        cursor.close()
+        connection.close()
 
 
 def insert_sample_info(connection, sensor_type, device_type, sampling_rate, sampling_length,
