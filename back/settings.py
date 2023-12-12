@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-
+import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -137,10 +137,10 @@ REST_FRAMEWORK = {
 DATABASES = {  # mysql连接
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "pulsedata",  # 数据库名
-        "USER": "root",  # mysql用户名
-        "PASSWORD": "123456",  # mysql密码
-        "HOST": "10.134.105.91",
+        "NAME": "pd_db",  # 数据库名
+        "USER": "admin",  # mysql用户名
+        "PASSWORD": "wgz123456",  # mysql密码
+        "HOST": "47.104.102.28",
         "PORT": "3306",
     }
 }
@@ -162,3 +162,6 @@ CORS_ALLOW_HEADERS = (
     "Pragma",
 )
 CORS_ALLOW_ALL_ORIGINS = True
+
+ALLOWED_HOSTS =['47.104.102.28','127.0.0.1']
+DEBUG = False

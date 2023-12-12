@@ -41,7 +41,10 @@ async def initial_files_data(folder_path, web_client):  # 初始文件数据
             file_path = os.path.join(folder_path, filename)  # 所有文件的绝对路径
             if os.path.isfile(file_path):  # 判断文件是否存在
                 if file_path.endswith(".dat"):  # 文件名结尾是否为.dat
-                    await send_inital_file_data(file_path, web_client)  # 对文件进行发送
+                    creation_time = os.stat(file_path).st_atime  # 文件的创建时间
+                    # 将时间戳转换为可读的日期-时间格式
+                    readable_time = time.ctime(creation_time)
+                    await send_inital_file_data(file_path, filename, readable_time, web_client)  # 对文件进行发送
             print("原始文件名为:{}".format(filename))
         print("================ 完成初始数据的发送 ================")
         await web_client.mark_initial_files_sent()  # 标记初始文件已发送, 更改标志位
@@ -91,7 +94,9 @@ async def send_file_data(file_path, web_client):
         print("====== {}数据集发送完成 ======".format(file_path))
 
 
-async def send_inital_file_data(file_path, web_client):
+async def send_inital_file_data(file_path, file_name, create_time, web_client):
+    file_size = os.path.getsize(file_path)
+    sample_data_size = int((file_size-64)/4016)
     try:
         with open(file_path, "rb") as file:
             # 以下是数据读取部分
@@ -106,12 +111,16 @@ async def send_inital_file_data(file_path, web_client):
             data = file.read(4)
             discharge_type = struct.unpack("i", data)[0]
             sampinfo = {
+                "file_name": file_name,
                 "sensor_type": sensor_type,
                 "device_type": device_type,
                 "sampling_rate": sampling_rate,
+                "pulse_count": sample_data_size,
                 "sampling_length": sampling_length,
                 "discharge_type": discharge_type,
+                "Date_created": create_time
             }
+
             # 向后移动44个字节
             file.seek(44, 1)
             await web_client._send(sampinfo)

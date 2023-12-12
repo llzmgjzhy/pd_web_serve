@@ -36,11 +36,15 @@ def create_table(connection, create_table_sql, table_name):
 create_sampinfo_table = """
 CREATE TABLE IF NOT EXISTS sample_info (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(50),
     sensor_type INT,
     device_type INT,
     sampling_rate FLOAT,
     sampling_length INT,
-    discharge_type INT
+    pulse_count INT,
+    discharge_type INT,
+    Date_created TIMESTAMP,
+    Date_received TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """
 
@@ -62,6 +66,15 @@ CREATE TABLE IF NOT EXISTS pd_result (
     start_index INT,
     end_index INT,
     detect_result INT
+)
+"""
+
+create_fileinfo_table = """
+CREATE TABLE IF NOT EXISTS file_info (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(50),
+    Date_created TIMESTAMP,
+    Date_received TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """
 
@@ -181,7 +194,7 @@ def main():
     create_table(connection, create_sampinfo_table, "sample_info")
     create_table(connection, create_sampdata_table, "sample_data")
     create_table(connection, create_pdresults_table, "pd_result")
-    alter_table_add_timestamp_column(connection)  # 保存数据时间
+    # alter_table_add_timestamp_column(connection)  # 保存数据时间
 
     # dir_path = 'E:\Data\data0824\高频局放数据20230824_001\电缆\巡检异常数据'  # 实验室GIS模拟放电装置数据20231024
     # file_names = os.listdir(dir_path)  # 文件名字
