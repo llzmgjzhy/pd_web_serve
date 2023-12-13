@@ -1,8 +1,5 @@
 import json
 import websockets
-import asyncio
-import websocket
-
 
 class WsClient:
     def __init__(self, url) -> None:

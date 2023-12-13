@@ -23,8 +23,6 @@ class MyConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):  # 当接收到WebSocket消息时，该方法将被调用
         try:
             text_data_json = json.loads(text_data)
-            print(self.Flag)
-
             await self.save_to_mysql(text_data_json)
             # message = text_data_json.get('sensor_type', 'No message key in JSON')
         except json.JSONDecodeError:
@@ -34,12 +32,6 @@ class MyConsumer(AsyncWebsocketConsumer):
             else:
                 print("接收到的数据为空或不可打印")
 
-        # 打印接收到的消息
-        # print(f"Received message from client: {message}")
-
-        # 存储数据到MySQL
-        # self.save_to_mysql(sensor_type)
-        # 发送消息到 WebSocket
         await self.send(">>>>>> 服务器端已收到数据 <<<<<<")
 
     async def save_to_mysql(self, data):
@@ -58,7 +50,6 @@ class MyConsumer(AsyncWebsocketConsumer):
             print('???添加数据流信息到MySQL中???')
             self.Flag = False
     
-        print('sfjslfjslfjlfjslfjd')
         print("----- 将数据存到MySQL中 -----")
 
         # connection = mysql.connector.connect(
@@ -81,8 +72,8 @@ class MyConsumer(AsyncWebsocketConsumer):
             discharge_type = data["discharge_type"]
             Date_created = data["Date_created"]
             self.sample_info_id = insert_sample_info(
-                file_name,
                 connection,
+                file_name,
                 sensor_type,
                 device_type,
                 sampling_rate,
@@ -159,7 +150,7 @@ def insert_sample_data(
 async def copy_and_increment_last_number(connection, table_name, columns_to_increment):
     try:
         # 查询上一行数据
-        select_query = f"SELECT * FROM {table_name} ORDER BY your_order_column DESC LIMIT 1"
+        select_query = f"SELECT * FROM {table_name} ORDER BY CAST(SUBSTRING_INDEX(id, '-', -1) AS UNSIGNED) DESC LIMIT 1;"
         cursor = connection.cursor(dictionary=True)
         cursor.execute(select_query)
         previous_row = cursor.fetchone()
