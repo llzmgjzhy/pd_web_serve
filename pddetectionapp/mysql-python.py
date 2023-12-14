@@ -180,7 +180,7 @@ def read_and_store_data(file_path, connection):
 def main():
     # 打开文件并加载JSON数据
     with open("../package.json", "r") as file:
-        db_config = json.load(file)["database"]
+        db_config = json.load(file)["database_"]
     # Database credentials
     host_name = db_config["host_name"]
     user_name = db_config["user_name"]

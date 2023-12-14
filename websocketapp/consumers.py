@@ -7,13 +7,14 @@ import re
 
 # 打开文件并加载JSON数据
 with open("package.json", "r") as file:
-    db_config = json.load(file)["database"]
+    db_config = json.load(file)["database_"]
 
 
 class MyConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.Flag = True
+
     async def connect(self):  # 当WebSocket连接建立时，该方法将被调用
         await self.accept()
 
@@ -35,21 +36,27 @@ class MyConsumer(AsyncWebsocketConsumer):
         await self.send(">>>>>> 服务器端已收到数据 <<<<<<")
 
     async def save_to_mysql(self, data):
-        
         connection = mysql.connector.connect(
-        host=db_config["host_name"],
-        database=db_config["db_name"],
-        user=db_config["user_name"],
-        password=db_config["user_password"],
+            host=db_config["host_name"],
+            database=db_config["db_name"],
+            user=db_config["user_name"],
+            password=db_config["user_password"],
         )
         if self.Flag:
-        # 指定要进行增量操作的列
-            columns_to_increment = ["id", "path", "children_name", "children_meta_title"]  # 替换为你实际的列名
+            # 指定要进行增量操作的列
+            columns_to_increment = [
+                "id",
+                "path",
+                "children_name",
+                "children_meta_title",
+            ]  # 替换为你实际的列名
             # 调用复制并插入的函数
-            await copy_and_increment_last_number(connection, "dynamic_routes", columns_to_increment)
-            print('???添加数据流信息到MySQL中???')
+            await copy_and_increment_last_number(
+                connection, "dynamic_routes", columns_to_increment
+            )
+            print("???添加数据流信息到MySQL中???")
             self.Flag = False
-    
+
         print("----- 将数据存到MySQL中 -----")
 
         # connection = mysql.connector.connect(
@@ -80,7 +87,7 @@ class MyConsumer(AsyncWebsocketConsumer):
                 pulse_count,
                 sampling_length,
                 discharge_type,
-                Date_created
+                Date_created,
             )
 
             # connection.commit()
@@ -97,13 +104,7 @@ class MyConsumer(AsyncWebsocketConsumer):
             tim = data["tim"]
             waveform = data["waveform"]
             insert_sample_data(
-                connection, 
-                self.sample_info_id, 
-                max_peak, 
-                phase, 
-                freq, 
-                tim, 
-                waveform
+                connection, self.sample_info_id, max_peak, phase, freq, tim, waveform
             )
 
         else:
@@ -114,9 +115,16 @@ class MyConsumer(AsyncWebsocketConsumer):
 
 
 def insert_sample_info(
-    connection, file_name, sensor_type, device_type, sampling_rate, pulse_count,
-    sampling_length, discharge_type, Date_created 
-    ):
+    connection,
+    file_name,
+    sensor_type,
+    device_type,
+    sampling_rate,
+    pulse_count,
+    sampling_length,
+    discharge_type,
+    Date_created,
+):
     with connection.cursor() as cursor:
         # SQL执行语句
         sql = """
@@ -125,7 +133,16 @@ def insert_sample_info(
         """
         cursor.execute(
             sql,
-            (file_name, sensor_type, device_type, sampling_rate, pulse_count, sampling_length, discharge_type, Date_created),
+            (
+                file_name,
+                sensor_type,
+                device_type,
+                sampling_rate,
+                pulse_count,
+                sampling_length,
+                discharge_type,
+                Date_created,
+            ),
         )
         connection.commit()
         print("Data information insert successfully")
@@ -161,10 +178,18 @@ async def copy_and_increment_last_number(connection, table_name, columns_to_incr
 
             # 对指定列进行增量操作
             for column in columns_to_increment:
-                if column in original_data and isinstance(original_data[column], str) and re.search(r'-(\d+)$', original_data[column]):
-                    original_number = int(re.search(r'-(\d+)$', original_data[column]).group(1))
+                if (
+                    column in original_data
+                    and isinstance(original_data[column], str)
+                    and re.search(r"-(\d+)$", original_data[column])
+                ):
+                    original_number = int(
+                        re.search(r"-(\d+)$", original_data[column]).group(1)
+                    )
                     new_number = original_number + 1
-                    original_data[column] = re.sub(r'-(\d+)$', f'-{new_number}', original_data[column])
+                    original_data[column] = re.sub(
+                        r"-(\d+)$", f"-{new_number}", original_data[column]
+                    )
 
             # 插入新行
             insert_query = f"INSERT INTO {table_name} ({', '.join(original_data.keys())}) VALUES ({', '.join(['%s'] * len(original_data))})"
