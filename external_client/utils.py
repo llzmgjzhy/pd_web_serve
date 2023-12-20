@@ -33,118 +33,43 @@ async def initial_files_data(folder_path, web_client):  # 初始文件数据
                     correct_datetime = datetime.fromtimestamp(creation_time).strftime(
                         "%Y-%m-%d %H:%M:%S"
                     )
-                    await send_inital_file_data(
+                    await send_file_data(
                         file_path, filename, correct_datetime, web_client
                     )  # 对文件进行发送
             print("原始文件名为:{}".format(filename))
-        print("================ 完成初始数据的发送 ================")
-        await web_client.mark_initial_files_sent()  # 标记初始文件已发送, 更改标志位
+        # print("================ 完成初始数据的发送 ================")
+        # await web_client.mark_initial_files_sent()  # 标记初始文件已发送, 更改标志位
 
 
 async def send_file_data(file_path, file_name, create_time, web_client):
-    file_size = os.path.getsize(file_path)
-    sample_data_size = int((file_size - 64) / 4016)
+    await web_client._send({"file_name": file_name[:-4]})
     try:
+        file_size = os.path.getsize(file_path)
+        print("文件的大小:{}".format(file_size))
+        chunk_size = 1024 * 1024  # 1MB大小的块
+        remaining_size = file_size
+        # 发送数据块
+        await web_client._send("发送新数据")
         with open(file_path, "rb") as file:
-            # 以下是数据读取部分
-            data = file.read(4)
-            sensor_type = struct.unpack("i", data)[0]
-            data = file.read(4)
-            device_type = struct.unpack("i", data)[0]
-            data = file.read(4)
-            sampling_rate = struct.unpack("f", data)[0]
-            data = file.read(4)
-            sampling_length = struct.unpack("i", data)[0]
-            data = file.read(4)
-            discharge_type = struct.unpack("i", data)[0]
-            sampinfo = {
-                "file_name": file_name,
-                "sensor_type": sensor_type,
-                "device_type": device_type,
-                "sampling_rate": sampling_rate,
-                "pulse_count": sample_data_size,
-                "sampling_length": sampling_length,
-                "discharge_type": discharge_type,
-                "Date_created": create_time,
-            }
+            while remaining_size > 0:
+                # 读取数据块
+                chunk_data = file.read(min(chunk_size, remaining_size))
+                if not chunk_data:
+                    break
 
-            # 向后移动44个字节
-            file.seek(44, 1)
-            await web_client._send(sampinfo)
+                # 发送数据块
+                await web_client._send(chunk_data)
 
-            for i in range(sample_data_size):
-                max_peak = struct.unpack("f", file.read(4))[0]
-                phase = struct.unpack("f", file.read(4))[0]
-                freq = struct.unpack("f", file.read(4))[0]
-                tim = struct.unpack("f", file.read(4))[0]
-                waveform = [
-                    struct.unpack("f", file.read(4))[0] for _ in range(sampling_length)
-                ]
+                # 更新剩余大小
+                remaining_size -= len(chunk_data)
 
-                measurement = {
-                    "max_peak": max_peak,
-                    "phase": phase,
-                    "freq": freq,
-                    "tim": tim,
-                    "waveform": waveform,
-                }
-                await web_client._send(measurement)
-        print("====== {}数据集发送完成 ======".format(file_path))
+        await web_client._send("END_OF_DATA")
+        # 发送传输完成的标志位
+        # await web_client._send({"end_of_file": 1})  # # 发送一个JSON对象，表示文件传输完成
+        print("====== {}数据集已发送，服务器正在接收中 ======".format(file_path))
+
     except Exception as e:
         print(f"在读取文件 {file_path} 时出现错误: {e}")
-
-
-async def send_inital_file_data(file_path, file_name, create_time, web_client):
-    file_size = os.path.getsize(file_path)
-    sample_data_size = int((file_size - 64) / 4016)
-    try:
-        with open(file_path, "rb") as file:
-            # 以下是数据读取部分
-            data = file.read(4)
-            sensor_type = struct.unpack("i", data)[0]
-            data = file.read(4)
-            device_type = struct.unpack("i", data)[0]
-            data = file.read(4)
-            sampling_rate = struct.unpack("f", data)[0]
-            data = file.read(4)
-            sampling_length = struct.unpack("i", data)[0]
-            data = file.read(4)
-            discharge_type = struct.unpack("i", data)[0]
-            sampinfo = {
-                "file_name": file_name,
-                "sensor_type": sensor_type,
-                "device_type": device_type,
-                "sampling_rate": sampling_rate,
-                "pulse_count": sample_data_size,
-                "sampling_length": sampling_length,
-                "discharge_type": discharge_type,
-                "Date_created": create_time,
-            }
-
-            # 向后移动44个字节
-            file.seek(44, 1)
-            await web_client._send(sampinfo)
-
-            for i in range(sample_data_size):
-                max_peak = struct.unpack("f", file.read(4))[0]
-                phase = struct.unpack("f", file.read(4))[0]
-                freq = struct.unpack("f", file.read(4))[0]
-                tim = struct.unpack("f", file.read(4))[0]
-                waveform = [
-                    struct.unpack("f", file.read(4))[0] for _ in range(sampling_length)
-                ]
-
-                measurement = {
-                    "max_peak": max_peak,
-                    "phase": phase,
-                    "freq": freq,
-                    "tim": tim,
-                    "waveform": waveform,
-                }
-                await web_client._send(measurement)
-    except Exception as e:
-        print(f"在读取文件 {file_path} 时出现错误: {e}")
-    # 这里可以添加重试逻辑或者只是简单地打印错误
 
 
 class MyHandler(FileSystemEventHandler):

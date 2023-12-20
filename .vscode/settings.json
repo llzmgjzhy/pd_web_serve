@@ -10,5 +10,8 @@
   "vs-code-prettier-eslint.prettierLast": "false",
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   } // set as "true" to run 'prettier' last not first
 }

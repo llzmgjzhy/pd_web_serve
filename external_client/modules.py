@@ -1,6 +1,7 @@
 import json
 import websockets
 
+
 class WsClient:
     def __init__(self, url) -> None:
         self.url = url  # url是websocket服务器的地址
@@ -23,15 +24,23 @@ class WsClient:
         except websockets.exceptions.InvalidHandshake as e:
             print("handshaking error:", e)
 
-    async def _send(self, text):
+    async def _send(self, data):
         """
         define text sending fun 发送文本信息
         """
-        if isinstance(text, dict):
-            text = json.dumps(text)  # 将json格式数据转成str
+        if isinstance(data, dict):
+            data = json.dumps(data)  # 将json格式数据转成str
 
+        elif isinstance(data, bytes):
+            # 字节数据，直接发送
+            pass
+        elif isinstance(data, str):
+            # 字符串数据，直接发送
+            pass
+        else:
+            print("无效的数据类型")
         if self.ws is not None:
-            await self.ws.send(text)
+            await self.ws.send(data)
         else:
             print("WebSocket connection is not established")
             # 可选：尝试重新连接或处理错误

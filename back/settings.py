@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import json
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -74,7 +75,7 @@ TEMPLATES = [
         },
     },
 ]
- 
+
 ASGI_APPLICATION = "back.asgi.application"
 WSGI_APPLICATION = "back.wsgi.application"
 
@@ -134,13 +135,16 @@ REST_FRAMEWORK = {
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 # }
+# 打开文件并加载JSON数据
+with open("package.json", "r") as file:
+    db_config = json.load(file)["database"]
 DATABASES = {  # mysql连接
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "pd_db",  # 数据库名
-        "USER": "admin",  # mysql用户名
-        "PASSWORD": "wgz123456",  # mysql密码
-        "HOST": "47.104.102.28",
+        "NAME": db_config["db_name"],  # 数据库名
+        "USER": db_config["user_name"],  # mysql用户名
+        "PASSWORD": db_config["user_password"],  # mysql密码
+        "HOST": db_config["host_name"],
         "PORT": "3306",
     }
 }
@@ -163,5 +167,5 @@ CORS_ALLOW_HEADERS = (
 )
 CORS_ALLOW_ALL_ORIGINS = True
 
-ALLOWED_HOSTS =['47.104.102.28','127.0.0.1']
+ALLOWED_HOSTS = ["47.104.102.28", "127.0.0.1"]
 DEBUG = False
