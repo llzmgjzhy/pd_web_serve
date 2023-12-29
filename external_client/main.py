@@ -8,8 +8,8 @@ parser = argparse.ArgumentParser(description="客户端发送数据")
 parser.add_argument(
     "--dir_path", type=str, default="E:\Project program\dataa", help="需要监视的文件夹路径"
 )
-# URL = "ws://47.104.102.28:8000/chat/"
-URL = "ws://127.0.0.1:8000/chat/"
+URL = "ws://47.104.102.28:8000/chat/"
+# URL = "ws://127.0.0.1:8000/chat/"
 args = parser.parse_args()
 
 

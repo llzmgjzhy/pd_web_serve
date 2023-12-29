@@ -2,22 +2,8 @@ import time
 from datetime import datetime
 import asyncio
 import os
-import struct
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
-
-# async def monitor_directory(path, web_client):  # 监测文件夹
-#     known_files = set(os.listdir(path))
-#     while True:
-#         current_files = set(os.listdir(path))
-#         new_files = current_files - known_files
-#         if new_files:
-#             await web_client._send("New data generation")
-#             known_files = current_files
-
-#             await send_file_data(os.path.join(path, next(iter(new_files))), web_client)
-#         await asyncio.sleep(1)  # 每秒检查一次
 
 
 async def initial_files_data(folder_path, web_client):  # 初始文件数据

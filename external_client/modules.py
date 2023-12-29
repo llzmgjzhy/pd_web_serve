@@ -76,8 +76,6 @@ class WsClient:
                 print("connection has been closed")
         else:
             print("WebSocket connection not established")
-        # infinite for loop to keeping connect alive
-        # writing concrete fun into while loop
 
     async def one_handle(self):
         await self._connect(self.url)  # 调用 _connect 方法来建立连接
